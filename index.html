@@ -1,8 +1,204 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Football Squares</title><meta name="description" content="Create a blank NFL or college football squares board and calculate quarter prizes."><style>
-:root{color-scheme:dark;font-family:Arial,Helvetica,sans-serif;background:#0b1014;color:#edf2f4}*{box-sizing:border-box}body{margin:0}main{max-width:1120px;margin:auto;padding:28px 24px 36px}header{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:24px}.eyebrow{font-size:12px;letter-spacing:2px;font-weight:700;color:#7edbb3;margin-bottom:7px}h1{font-size:32px;letter-spacing:-1px;margin:0}button{font:700 15px Arial;border:1px solid #8de3b9;background:#8de3b9;color:#10291e;border-radius:6px;padding:13px 20px;cursor:pointer}button:hover{background:#b4f3d2}button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid #8de3b9;outline-offset:3px}.controls{display:grid;grid-template-columns:.65fr 1fr 1fr .7fr;gap:18px;margin-bottom:22px}label{display:block;color:#bcc8cf;font-size:14px;margin-bottom:8px}select,input{width:100%;min-height:46px;font:16px Arial;background:#172128;color:#fff;border:1px solid #39464f;border-radius:6px;padding:11px}input{padding-left:30px}.money{position:relative}.money span{position:absolute;left:13px;top:13px;color:#a4b3ba}.sheet{background:#fff;color:#172128;border-radius:8px;padding:20px 24px 24px;box-shadow:0 16px 55px #0004}.sheet-top{display:flex;align-items:center;justify-content:space-between;gap:15px;padding-bottom:10px;border-bottom:1px solid #dfe4e7}.sheet-title{font-size:13px;font-weight:bold;letter-spacing:1.8px}.sheet-meta{font-size:14px;color:#52616a}.board{display:grid;grid-template-columns:64px minmax(0,1fr);grid-template-rows:70px auto}.top-team{grid-column:2;display:flex;align-items:center;justify-content:center;gap:14px}.team-name{font-size:23px;font-weight:800;letter-spacing:-.5px}.logo{width:58px;height:58px;object-fit:contain}.side-team{grid-column:1;grid-row:2;position:relative;display:flex;align-items:center;justify-content:center}.side-inner{transform:rotate(-90deg);display:flex;align-items:center;justify-content:center;gap:14px;white-space:nowrap}.side-inner .logo{transform:rotate(90deg)}.grid{grid-column:2;grid-row:2;display:grid;grid-template-columns:34px repeat(10,minmax(0,1fr));grid-template-rows:30px repeat(10,1fr);aspect-ratio:1.55;border-top:1px solid #35434c;border-left:1px solid #35434c}.cell{border-right:1px solid #75828b;border-bottom:1px solid #75828b;background:white}.number{background:#edf1f3;border-color:#75828b}.corner{background:#dce4e8}.prize-heading{display:flex;align-items:center;justify-content:space-between;margin:22px 0 12px;gap:10px}.prize-heading h2{margin:0;font-size:16px}.total{font-size:14px;color:#52616a}.total strong{color:#172128}.prizes{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid #c9d2d7;border-radius:6px;overflow:hidden}.prize{padding:15px 17px;border-right:1px solid #c9d2d7}.prize:last-child{border:0;background:#edf8f2}.prize-label{font-size:14px;color:#42545f}.value{font-size:28px;font-weight:800;letter-spacing:-1px;margin:7px 0 5px}.share{font-size:12px;color:#63727c}.footnote{font-size:12px;color:#657781;margin:12px 0 0;line-height:1.5}.hint{font-size:14px;color:#9dacb6;margin:16px 0 0}.error{color:#ffb4a7;font-size:14px;margin:0 0 14px}.error:empty{display:none}@media(max-width:650px){main{padding:20px 12px}h1{font-size:26px}.controls{grid-template-columns:1fr 1fr;gap:12px}.amount-control{grid-column:auto}.sheet{padding:12px 10px}.board{grid-template-columns:42px minmax(0,1fr);grid-template-rows:62px auto}.team-name{font-size:16px}.logo{width:36px;height:36px}.grid{grid-template-columns:23px repeat(10,minmax(0,1fr));grid-template-rows:24px repeat(10,1fr);aspect-ratio:1}.side-inner,.top-team{gap:8px}.sheet-title{font-size:11px;letter-spacing:.5px}.sheet-meta{font-size:12px}.prizes{grid-template-columns:1fr 1fr}.prize{padding:12px;border-bottom:1px solid #c9d2d7}.prize:nth-child(2){border-right:0}.prize:nth-child(3){border-bottom:0}.value{font-size:25px}.prize-heading{align-items:start}.total{max-width:150px;text-align:right}}
-@page{size:letter landscape;margin:.35in}@media print{:root{color-scheme:light;background:white}body{background:white}main{max-width:none;padding:0}header,.controls,.hint,.error{display:none}.sheet{padding:0;border-radius:0;box-shadow:none;break-inside:avoid}.board{grid-template-columns:55px minmax(0,1fr);grid-template-rows:55px auto}.grid{height:4.5in;aspect-ratio:auto}.logo{height:44px;width:44px}.team-name{font-size:22px}.prize-heading{margin:12px 0 8px}.prize{padding:8px 14px}.value{font-size:24px;margin:3px 0}.footnote{margin-top:6px}.sheet-top{padding-bottom:6px}.prizes{grid-template-columns:repeat(4,1fr)}*{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
-</style></head><body><main><header><div><div class="eyebrow">GAME DAY / 100 SQUARES</div><h1>Football Squares</h1></div><button id="print" type="button">Print board</button></header><section class="controls" aria-label="Board settings"><div><label for="league">League</label><select id="league"><option value="NFL">NFL</option><option value="College">College (FBS)</option></select></div><div><label for="top">Top team</label><select id="top"></select></div><div><label for="side">Side team</label><select id="side"></select></div><div class="amount-control"><label for="amount">Dollars per square</label><div class="money"><span>$</span><input id="amount" type="number" min="0" max="1000000" step="0.01" value="2" inputmode="decimal" aria-describedby="error"></div></div></section><p class="error" id="error" role="alert"></p><section class="sheet" aria-label="Printable football squares board"><div class="sheet-top"><span class="sheet-title">FOOTBALL SQUARES</span><span class="sheet-meta" id="meta"></span></div><div class="board"><div class="top-team"><img class="logo" id="top-logo" alt=""><span class="team-name" id="top-name"></span></div><div class="side-team"><div class="side-inner"><img class="logo" id="side-logo" alt=""><span class="team-name" id="side-name"></span></div></div><div class="grid" id="grid" role="img" aria-label="Blank ten by ten squares board, with empty row and column number spaces"></div></div><div class="prize-heading"><h2>Quarter payouts</h2><div class="total">Total pot <strong id="total"></strong></div></div><div class="prizes" aria-live="polite"><div class="prize"><div class="prize-label">1st quarter</div><div class="value" id="q1"></div><div class="share">⅛ of total · 12.5%</div></div><div class="prize"><div class="prize-label">Halftime</div><div class="value" id="q2"></div><div class="share">¼ of total · 25%</div></div><div class="prize"><div class="prize-label">3rd quarter</div><div class="value" id="q3"></div><div class="share">⅛ of total · 12.5%</div></div><div class="prize"><div class="prize-label">4th quarter</div><div class="value" id="q4"></div><div class="share">½ of total · 50%</div></div></div><p class="footnote" id="rounding">Payouts assume all 100 squares are filled.</p></section><p class="hint">Choose your teams and square price, then print. Squares and number spaces stay blank for you to fill in.</p></main><script src="teams.js"></script><script src="college-teams.js"></script><script>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Football Squares</title><meta name="description" content="Create a blank NFL or college football squares board and calculate quarter prizes.">
+    <style>
+        :root{color-scheme:dark;font-family:Arial,Helvetica,sans-serif;background:#0b1014;color:#edf2f4}*{box-sizing:border-box}
+            body{margin:0}
+            main{max-width:1120px;margin:auto;padding:28px 24px 36px}
+
+            header{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:24px}
+                .eyebrow{font-size:12px;letter-spacing:2px;font-weight:700;color:#7edbb3;margin-bottom:7px}
+            h1{font-size:32px;letter-spacing:-1px;margin:0}
+            button{font:700 15px Arial;border:1px solid #8de3b9;background:#8de3b9;color:#10291e;border-radius:6px;padding:13px 20px;cursor:pointer}
+            button:hover{background:#b4f3d2}
+
+            button:focus-visible,
+            select:focus-visible,
+            input:focus-visible{outline:3px solid #8de3b9;outline-offset:3px}
+
+                .controls{display:grid;grid-template-columns:.65fr 1fr 1fr .7fr;gap:18px;margin-bottom:22px}
+            label{display:block;color:#bcc8cf;font-size:14px;margin-bottom:8px}
+            select,input{width:100%;min-height:46px;font:16px Arial;background:#172128;color:#fff;border:1px solid #39464f;border-radius:6px;padding:11px}
+            input{padding-left:30px}
+                .money{position:relative}
+                .money span{position:absolute;left:13px;top:13px;color:#a4b3ba}
+                .sheet{background:#fff;color:#172128;border-radius:8px;padding:20px 24px 24px;box-shadow:0 16px 55px #0004}
+                .sheet-top{display:flex;align-items:center;justify-content:space-between;gap:15px;padding-bottom:10px;border-bottom:1px solid #dfe4e7}
+                .sheet-title{font-size:13px;font-weight:bold;letter-spacing:1.8px}
+                .sheet-meta{font-size:14px;color:#52616a}
+                .board{display:grid;grid-template-columns:64px minmax(0,1fr);grid-template-rows:70px auto}
+                .top-team{grid-column:2;display:flex;align-items:center;justify-content:center;gap:14px}
+                .team-name{font-size:23px;font-weight:800;letter-spacing:-.5px}
+                .logo{width:58px;height:58px;object-fit:contain}
+                .side-team{grid-column:1;grid-row:2;position:relative;display:flex;align-items:center;justify-content:center}
+                .side-inner{transform:rotate(-90deg);display:flex;align-items:center;justify-content:center;gap:14px;white-space:nowrap}
+                .side-inner .logo{transform:rotate(90deg)}
+                .grid{grid-column:2;grid-row:2;display:grid;grid-template-columns:34px repeat(10,minmax(0,1fr));grid-template-rows:30px repeat(10,1fr);aspect-ratio:1.55;border-top:1px solid #35434c;border-left:1px solid #35434c}
+                .cell{border-right:1px solid #75828b;border-bottom:1px solid #75828b;background:white}
+                .number{background:#edf1f3;border-color:#75828b}
+                .corner{background:#dce4e8}
+                .prize-heading{display:flex;align-items:center;justify-content:space-between;margin:22px 0 12px;gap:10px}
+                .prize-heading h2{margin:0;font-size:16px}
+                .total{font-size:14px;color:#52616a}
+                .total strong{color:#172128}
+                .prizes{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid #c9d2d7;border-radius:6px;overflow:hidden}
+                .prize{padding:5px 5px;border-right:1px solid #c9d2d7}
+                .prize:last-child{border:0;background:#edf8f2}
+                .prize-label{font-size:14px;color:#42545f}
+                .value{font-size:15px;
+                       font-weight:800;
+                       letter-spacing:-1px;
+                       margin:2px 0 2px}
+                .share{font-size:12px;color:#63727c}
+                .footnote{font-size:12px;color:#657781;margin:12px 0 0;line-height:1.5}
+                .hint{font-size:14px;color:#9dacb6;margin:16px 0 0}
+                .error{color:#ffb4a7;font-size:14px;margin:0 0 14px}
+                .error:empty{display:none}
+
+    @media(max-width:650px){main{padding:20px 12px}h1{font-size:26px}
+        .controls{grid-template-columns:1fr 1fr;gap:12px}
+        .amount-control{grid-column:auto}
+        .sheet{padding:12px 10px}
+        .board{grid-template-columns:42px minmax(0,1fr);grid-template-rows:62px auto}
+        .team-name{font-size:16px}
+        .logo{width:36px;height:36px}
+        .grid{grid-template-columns:23px repeat(10,minmax(0,1fr));grid-template-rows:24px repeat(10,1fr);aspect-ratio:1}
+
+        .side-inner,
+        .top-team{gap:8px}
+        .sheet-title{font-size:11px;letter-spacing:.5px}
+        .sheet-meta{font-size:12px}
+        .prizes{grid-template-columns:1fr 1fr}
+        .prize{padding:12px;border-bottom:1px solid #c9d2d7}
+        .prize:nth-child(2){border-right:0}
+        .prize:nth-child(3){border-bottom:0}
+        .value{font-size:25px}
+        .prize-heading{align-items:start}
+        .total{max-width:150px;text-align:right}}
+
+    @page{size:letter landscape;margin:.35in}
+
+    @media
+    print{
+        :root{color-scheme:light;background:white}
+            body{background:white}main{max-width:none;padding:0}header,
+            .controls,
+            .hint,
+            .error{display:none}
+            .sheet{padding:0;border-radius:0;box-shadow:none;break-inside:avoid}
+            .board{grid-template-columns:55px minmax(0,1fr);grid-template-rows:55px auto}
+            .grid{height:4.5in;aspect-ratio:auto}
+            .logo{height:44px;width:44px}
+            .team-name{font-size:22px}
+            .prize-heading{margin:12px 0 8px}
+            .prize{padding:8px 14px}
+            .value{font-size:24px;margin:3px 0}
+            .footnote{margin-top:6px}
+            .sheet-top{padding-bottom:6px}
+            .prizes{grid-template-columns:repeat(4,1fr)}*{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+    </style>
+</head>
+
+<body>
+
+    <main>
+        <header><div><div class="eyebrow">GAME DAY / 100 SQUARES</div><h1>Football Squares</h1></div><button id="print" type="button">Print board</button></header>
+
+            <section class="controls" aria-label="Board settings">
+
+                <div><label for="league">League</label>
+
+                    <select id="league">
+
+                        <option value="NFL">
+                            NFL
+                        </option>
+
+                        <option value="College">
+                            College (FBS)
+                        </option>
+                    </select>
+
+                </div>
+
+            <div>
+                <label for="top">
+                    Top team
+                </label>
+
+                <select id="top"></select>
+
+            </div>
+
+            <div>
+                <label for="side">
+                    Side team
+                </label>
+                    <select id="side"></select>
+            </div>
+
+            <div class="amount-control">
+                <label for="amount">
+                    Dollars per square
+                </label>
+
+                <div class="money">
+                    <span>
+                        $
+                    </span>
+
+                    <input id="amount" type="number" min="0" max="1000000" step="0.01" value="2" inputmode="decimal" aria-describedby="error">
+                </div>
+            </div>
+        </section>
+
+    <p class="error" id="error" role="alert"></p>
+
+    <section class="sheet" aria-label="Printable football squares board">
+
+
+        <div class="board">
+            <div class="top-team"><img class="logo" id="top-logo" alt="">
+                <span class="team-name" id="top-name"></span>
+            </div>
+
+            <div class="side-team">
+                <div class="side-inner">
+                    <img class="logo" id="side-logo" alt="">
+                        <span class="team-name" id="side-name">
+                        </span>
+                </div>
+            </div>
+                <div class="grid" id="grid" role="img" aria-label="Blank ten by ten squares board, with empty row and column number spaces">
+                </div>
+            </div>
+
+
+
+        <div class="prizes" aria-live="polite">
+            <div class="prize">
+                <div class="prize-label">1st quarter</div>
+                    <div class="value" id="q1"></div>
+
+                    </div>
+
+                    <div class="prize">
+                        <div class="prize-label">Halftime</div>
+                            <div class="value" id="q2"></div>
+                                </div>
+                                    <div class="prize"><div class="prize-label">3rd quarter</div>
+                                        <div class="value" id="q3"></div>
+
+                                                </div><div class="prize"><div class="prize-label">4th quarter</div><div class="value" id="q4"></div></div></div>
+
+
+    </main>
+
+<script src="teams.js"></script>
+
+<script src="college-teams.js"></script>
+
+<script>
+
 const el=id=>document.getElementById(id);
 let activeTeams=TEAMS;
 const selections={NFL:{top:'SEA',side:'SF'},College:{top:'',side:''}};
@@ -15,4 +211,27 @@ const money=cents=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD
 function calculate(cents){const total=cents*100,q1=Math.round(total/8),half=Math.round(total/4);return {total,values:[q1,half,q1,total-q1*2-half]}}
 function updatePrice(){const raw=el('amount').value.trim(),n=Number(raw);const valid=raw!==''&&Number.isFinite(n)&&n>=0&&n<=1000000&&Math.abs(n*100-Math.round(n*100))<.00001;el('error').textContent=valid?'':'Enter an amount from $0 to $1,000,000, with no more than two decimal places.';el('amount').setAttribute('aria-invalid',String(!valid));el('print').disabled=!valid;if(!valid){['q1','q2','q3','q4','total'].forEach(id=>el(id).textContent='—');el('meta').textContent='100 squares';return}const cents=Math.round(n*100),p=calculate(cents);p.values.forEach((v,i)=>el('q'+(i+1)).textContent=money(v));el('total').textContent=money(p.total);el('meta').textContent='100 squares × '+money(cents)+' each';el('rounding').textContent='Payouts assume all 100 squares are filled.'+(p.total%8?' Prizes are rounded to cents; the 4th-quarter payout balances the total.':'')}
 el('amount').addEventListener('input',updatePrice);el('print').addEventListener('click',()=>window.print());changeLeague();updatePrice();
-</script></body></html>
+</script>
+
+</body>
+
+</html>
+
+
+<!--
+NOTE:  got rid of stuff like this:  can be added again if need be
+
+changed .value font weight from 800 to 100  font size to 10px
+
+got rid of this:
+<div class="prize-heading"><h2>Quarter payouts</h2><div class="total">Total pot <strong id="total"></strong></div></div>
+
+got rid of footnote:
+<p class="footnote" id="rounding">Payouts assume all 100 squares are filled.</p></section><p class="hint">Choose your teams and square price, then print. Squares and number spaces stay blank for you to fill in.</p>
+
+got rid of the title
+<div class="sheet-top"><span class="sheet-title">FOOTBALL SQUARES</span><span class="sheet-meta" id="meta"></span></div>
+
+prints the percent of the pot but i needed space on the sheet
+<div class="share">½ of total · 50%</div>
+-->
