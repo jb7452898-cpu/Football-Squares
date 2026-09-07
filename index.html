@@ -84,14 +84,16 @@
             .controls,
             .hint,
             .error{display:none}
-            .sheet{padding:0;border-radius:0;box-shadow:none;break-inside:avoid}
-            .board{grid-template-columns:55px minmax(0,1fr);grid-template-rows:55px auto}
-            .grid{height:4.5in;aspect-ratio:auto}
+            .sheet{height:7.8in;padding:0;border-radius:0;box-shadow:none;break-inside:avoid;display:flex;flex-direction:column}
+            .board{flex:1;min-height:0;grid-template-columns:55px minmax(0,1fr);grid-template-rows:55px minmax(0,1fr)}
+            .grid{height:auto;min-height:0;aspect-ratio:auto}
             .logo{height:44px;width:44px}
             .team-name{font-size:22px}
             .prize-heading{margin:12px 0 8px}
             .prize{padding:8px 14px}
-            .value{font-size:24px;margin:3px 0}
+            .value{
+                font-size:15px;
+                margin:3px 0}
             .footnote{margin-top:6px}
             .sheet-top{padding-bottom:6px}
             .prizes{grid-template-columns:repeat(4,1fr)}*{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
@@ -202,15 +204,62 @@
 const el=id=>document.getElementById(id);
 let activeTeams=TEAMS;
 const selections={NFL:{top:'SEA',side:'SF'},College:{top:'',side:''}};
-function changeLeague(){const league=el('league').value;activeTeams=league==='College'?COLLEGE_TEAMS:TEAMS;for(const axis of ['top','side']){el(axis).replaceChildren();for(const team of activeTeams){const o=document.createElement('option');o.value=team.id;o.textContent=team.name;el(axis).append(o)}const preferred=selections[league][axis];el(axis).value=activeTeams.some(t=>t.id===preferred)?preferred:activeTeams[axis==='top'?0:1].id;updateTeam(axis)}}
-for(const axis of ['top','side'])el(axis).addEventListener('change',()=>{selections[el('league').value][axis]=el(axis).value;updateTeam(axis)});
+function changeLeague(){
+    const league=el('league').value;activeTeams=league==='College'?COLLEGE_TEAMS:TEAMS;
+        for(const axis of ['top','side']){
+            el(axis).replaceChildren();
+            for(const team of activeTeams){
+                const o=document.createElement('option');
+                    o.value=team.id;
+                    o.textContent=team.name;
+                    el(axis).append(o)}
+                    const preferred=selections[league][axis];
+                    el(axis).value=activeTeams.some(t=>t.id===preferred)?preferred:activeTeams[axis==='top'?0:1].id;
+                    updateTeam(axis)
+                    }
+}
+
+
+for(const axis of ['top','side'])el(axis).addEventListener('change',()=>{
+    selections[el('league').value][axis]=el(axis).value;updateTeam(axis)
+    }
+);
+
 el('league').addEventListener('change',changeLeague);
-function updateTeam(axis){const t=activeTeams.find(t=>t.id===el(axis).value);el(axis+'-name').textContent=t.name;el(axis+'-logo').src=t.logo;el(axis+'-logo').alt=t.name+' team logo'}
-for(let r=0;r<11;r++){for(let c=0;c<11;c++){const cell=document.createElement('div');cell.className='cell'+(r===0||c===0?' number':'')+(r===0&&c===0?' corner':'');el('grid').append(cell)}}
+
+function updateTeam(axis){const t=activeTeams.find(t=>t.id===el(axis).value);
+
+el(axis+'-name').textContent=t.name;
+el(axis+'-logo').src=t.logo;
+el(axis+'-logo').alt=t.name+' team logo'}
+for(let r=0;r<11;r++){
+    for(let c=0;c<11;c++){
+        const cell=document.createElement('div');
+        cell.className='cell'+(r===0||c===0?' number':'')+(r===0&&c===0?' corner':'');
+
+        el('grid').append(cell)
+    }
+}
+
 const money=cents=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',minimumFractionDigits:cents%100?2:0,maximumFractionDigits:2}).format(cents/100);
-function calculate(cents){const total=cents*100,q1=Math.round(total/8),half=Math.round(total/4);return {total,values:[q1,half,q1,total-q1*2-half]}}
-function updatePrice(){const raw=el('amount').value.trim(),n=Number(raw);const valid=raw!==''&&Number.isFinite(n)&&n>=0&&n<=1000000&&Math.abs(n*100-Math.round(n*100))<.00001;el('error').textContent=valid?'':'Enter an amount from $0 to $1,000,000, with no more than two decimal places.';el('amount').setAttribute('aria-invalid',String(!valid));el('print').disabled=!valid;if(!valid){['q1','q2','q3','q4','total'].forEach(id=>el(id).textContent='—');el('meta').textContent='100 squares';return}const cents=Math.round(n*100),p=calculate(cents);p.values.forEach((v,i)=>el('q'+(i+1)).textContent=money(v));el('total').textContent=money(p.total);el('meta').textContent='100 squares × '+money(cents)+' each';el('rounding').textContent='Payouts assume all 100 squares are filled.'+(p.total%8?' Prizes are rounded to cents; the 4th-quarter payout balances the total.':'')}
-el('amount').addEventListener('input',updatePrice);el('print').addEventListener('click',()=>window.print());changeLeague();updatePrice();
+
+function calculate(cents){
+    const total=cents*100,q1=Math.round(total/8),half=Math.round(total/4);
+    return {total,values:[q1,half,q1,total-q1*2-half]}
+    }
+
+function updatePrice(){
+    const raw=el('amount').value.trim(),n=Number(raw);
+    const valid=raw!==''&&Number.isFinite(n)&&n>=0&&n<=1000000&&Math.abs(n*100-Math.round(n*100))<.00001;el('error').textContent=valid?'':'Enter an amount from $0 to $1,000,000, with no more than two decimal places.';
+    el('amount').setAttribute('aria-invalid',String(!valid));
+    el('print').disabled=!valid;if(!valid){['q1','q2','q3','q4','total'].forEach(id=>el(id).textContent='—');
+    el('meta').textContent='100 squares';return}const cents=Math.round(n*100),p=calculate(cents);p.values.forEach((v,i)=>el('q'+(i+1)).textContent=money(v));el('total').textContent=money(p.total);el('meta').textContent='100 squares × '+money(cents)+' each';el('rounding').textContent='Payouts assume all 100 squares are filled.'+(p.total%8?' Prizes are rounded to cents; the 4th-quarter payout balances the total.':'')
+    }
+
+el('amount').addEventListener('input',updatePrice);
+
+el('print').addEventListener('click',()=>window.print());changeLeague();updatePrice();
+
 </script>
 
 </body>
