@@ -15,7 +15,7 @@
             select:focus-visible,
             input:focus-visible{outline:3px solid #8de3b9;outline-offset:3px}
 
-                .controls{display:grid;grid-template-columns:.65fr 1fr 1fr .7fr;gap:18px;margin-bottom:22px}
+                .controls{display:grid;grid-template-columns:.65fr .65fr 1fr 1fr .7fr;gap:18px;margin-bottom:22px}
             label{display:block;color:#bcc8cf;font-size:14px;margin-bottom:8px}
             select,input{width:100%;min-height:46px;font:16px Arial;background:#172128;color:#fff;border:1px solid #39464f;border-radius:6px;padding:11px}
             input{padding-left:30px}
@@ -32,7 +32,7 @@
                 .side-team{grid-column:1;grid-row:2;position:relative;display:flex;align-items:center;justify-content:center}
                 .side-inner{transform:rotate(-90deg);display:flex;align-items:center;justify-content:center;gap:14px;white-space:nowrap}
                 .side-inner .logo{transform:rotate(90deg)}
-                .grid{grid-column:2;grid-row:2;display:grid;grid-template-columns:34px repeat(10,minmax(0,1fr));grid-template-rows:30px repeat(10,1fr);aspect-ratio:1.55;border-top:1px solid #35434c;border-left:1px solid #35434c}
+                .grid{grid-column:2;grid-row:2;display:grid;grid-template-columns:34px repeat(var(--grid-size,10),minmax(0,1fr));grid-template-rows:30px repeat(var(--grid-size,10),1fr);aspect-ratio:1.55;border-top:1px solid #35434c;border-left:1px solid #35434c}
                 .cell{border-right:1px solid #75828b;border-bottom:1px solid #75828b;background:white}
                 .number{background:#edf1f3;border-color:#75828b}
                 .corner{background:#dce4e8}
@@ -61,7 +61,7 @@
         .board{grid-template-columns:42px minmax(0,1fr);grid-template-rows:62px auto}
         .team-name{font-size:16px}
         .logo{width:36px;height:36px}
-        .grid{grid-template-columns:23px repeat(10,minmax(0,1fr));grid-template-rows:24px repeat(10,1fr);aspect-ratio:1}
+        .grid{grid-template-columns:23px repeat(var(--grid-size,10),minmax(0,1fr));grid-template-rows:24px repeat(var(--grid-size,10),1fr);aspect-ratio:1}
 
         .side-inner,
         .top-team{gap:8px}
@@ -103,7 +103,7 @@
 <body>
 
     <main>
-        <header><div><div class="eyebrow">GAME DAY / 100 SQUARES</div><h1>Football Squares</h1></div><button id="print" type="button">Print board</button></header>
+        <header><div><div class="eyebrow" id="eyebrow">GAME DAY / 100 SQUARES</div><h1>Football Squares</h1></div><button id="print" type="button">Print board</button></header>
 
             <section class="controls" aria-label="Board settings">
 
@@ -121,6 +121,18 @@
                     </select>
 
                 </div>
+
+            <div>
+                <label for="grid-size">Squares per side</label>
+                <select id="grid-size">
+                    <option value="5">5 × 5 (25)</option>
+                    <option value="6">6 × 6 (36)</option>
+                    <option value="7">7 × 7 (49)</option>
+                    <option value="8">8 × 8 (64)</option>
+                    <option value="9">9 × 9 (81)</option>
+                    <option value="10" selected>10 × 10 (100)</option>
+                </select>
+            </div>
 
             <div>
                 <label for="top">
@@ -157,7 +169,6 @@
 
     <section class="sheet" aria-label="Printable football squares board">
 
-
         <div class="board">
             <div class="top-team"><img class="logo" id="top-logo" alt="">
                 <span class="team-name" id="top-name"></span>
@@ -170,10 +181,9 @@
                         </span>
                 </div>
             </div>
-                <div class="grid" id="grid" role="img" aria-label="Blank ten by ten squares board, with empty row and column number spaces">
+                <div class="grid" id="grid" role="img" aria-label="Blank 10 by 10 squares board, with empty row and column number spaces">
                 </div>
             </div>
-
 
 
         <div class="prizes" aria-live="polite">
@@ -191,6 +201,8 @@
                                         <div class="value" id="q3"></div>
 
                                                 </div><div class="prize"><div class="prize-label">4th quarter</div><div class="value" id="q4"></div></div></div>
+
+    </section>
 
 
     </main>
@@ -232,19 +244,27 @@ function updateTeam(axis){const t=activeTeams.find(t=>t.id===el(axis).value);
 el(axis+'-name').textContent=t.name;
 el(axis+'-logo').src=t.logo;
 el(axis+'-logo').alt=t.name+' team logo'}
-for(let r=0;r<11;r++){
-    for(let c=0;c<11;c++){
+function buildGrid(){
+    const size=Number(el('grid-size').value),squareCount=size*size;
+    el('grid').replaceChildren();
+    el('grid').style.setProperty('--grid-size',size);
+    el('grid').setAttribute('aria-label',`Blank ${size} by ${size} squares board, with empty row and column number spaces`);
+    for(let r=0;r<=size;r++){
+      for(let c=0;c<=size;c++){
         const cell=document.createElement('div');
         cell.className='cell'+(r===0||c===0?' number':'')+(r===0&&c===0?' corner':'');
 
         el('grid').append(cell)
+      }
     }
+    el('eyebrow').textContent=`GAME DAY / ${squareCount} SQUARES`;
+    updatePrice();
 }
 
 const money=cents=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',minimumFractionDigits:cents%100?2:0,maximumFractionDigits:2}).format(cents/100);
 
 function calculate(cents){
-    const total=cents*100,q1=Math.round(total/8),half=Math.round(total/4);
+    const size=Number(el('grid-size').value),total=cents*size*size,q1=Math.round(total/8),half=Math.round(total/4);
     return {total,values:[q1,half,q1,total-q1*2-half]}
     }
 
@@ -252,13 +272,14 @@ function updatePrice(){
     const raw=el('amount').value.trim(),n=Number(raw);
     const valid=raw!==''&&Number.isFinite(n)&&n>=0&&n<=1000000&&Math.abs(n*100-Math.round(n*100))<.00001;el('error').textContent=valid?'':'Enter an amount from $0 to $1,000,000, with no more than two decimal places.';
     el('amount').setAttribute('aria-invalid',String(!valid));
-    el('print').disabled=!valid;if(!valid){['q1','q2','q3','q4','total'].forEach(id=>el(id).textContent='—');
-    el('meta').textContent='100 squares';return}const cents=Math.round(n*100),p=calculate(cents);p.values.forEach((v,i)=>el('q'+(i+1)).textContent=money(v));el('total').textContent=money(p.total);el('meta').textContent='100 squares × '+money(cents)+' each';el('rounding').textContent='Payouts assume all 100 squares are filled.'+(p.total%8?' Prizes are rounded to cents; the 4th-quarter payout balances the total.':'')
+    el('print').disabled=!valid;if(!valid){['q1','q2','q3','q4'].forEach(id=>el(id).textContent='—');
+    return}const cents=Math.round(n*100),p=calculate(cents);p.values.forEach((v,i)=>el('q'+(i+1)).textContent=money(v))
     }
 
 el('amount').addEventListener('input',updatePrice);
+el('grid-size').addEventListener('change',buildGrid);
 
-el('print').addEventListener('click',()=>window.print());changeLeague();updatePrice();
+el('print').addEventListener('click',()=>window.print());changeLeague();buildGrid();
 
 </script>
 
