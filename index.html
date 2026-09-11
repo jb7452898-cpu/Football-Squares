@@ -32,7 +32,7 @@
                 .side-team{grid-column:1;grid-row:2;position:relative;display:flex;align-items:center;justify-content:center}
                 .side-inner{transform:rotate(-90deg);display:flex;align-items:center;justify-content:center;gap:14px;white-space:nowrap}
                 .side-inner .logo{transform:rotate(90deg)}
-                .grid{grid-column:2;grid-row:2;display:grid;grid-template-columns:34px repeat(var(--grid-size,10),minmax(0,1fr));grid-template-rows:30px repeat(var(--grid-size,10),1fr);aspect-ratio:1.55;border-top:1px solid #35434c;border-left:1px solid #35434c}
+                .grid{grid-column:2;grid-row:2;display:grid;grid-template-columns:34px repeat(var(--grid-cols,10),minmax(0,1fr));grid-template-rows:30px repeat(var(--grid-rows,10),1fr);aspect-ratio:var(--grid-aspect-desktop,1.55);border-top:1px solid #35434c;border-left:1px solid #35434c}
                 .cell{border-right:1px solid #75828b;border-bottom:1px solid #75828b;background:white}
                 .number{background:#edf1f3;border-color:#75828b}
                 .corner{background:#dce4e8}
@@ -61,7 +61,7 @@
         .board{grid-template-columns:42px minmax(0,1fr);grid-template-rows:62px auto}
         .team-name{font-size:16px}
         .logo{width:36px;height:36px}
-        .grid{grid-template-columns:23px repeat(var(--grid-size,10),minmax(0,1fr));grid-template-rows:24px repeat(var(--grid-size,10),1fr);aspect-ratio:1}
+        .grid{grid-template-columns:23px repeat(var(--grid-cols,10),minmax(0,1fr));grid-template-rows:24px repeat(var(--grid-rows,10),1fr);aspect-ratio:var(--grid-aspect-mobile,1)}
 
         .side-inner,
         .top-team{gap:8px}
@@ -123,13 +123,14 @@
                 </div>
 
             <div>
-                <label for="grid-size">Squares per side</label>
+                <label for="grid-size">Grid size</label>
                 <select id="grid-size">
                     <option value="5">5 × 5 (25)</option>
                     <option value="6">6 × 6 (36)</option>
                     <option value="7">7 × 7 (49)</option>
                     <option value="8">8 × 8 (64)</option>
                     <option value="9">9 × 9 (81)</option>
+                    <option value="10x5">10 × 5 (50)</option>
                     <option value="10" selected>10 × 10 (100)</option>
                 </select>
             </div>
@@ -244,13 +245,23 @@ function updateTeam(axis){const t=activeTeams.find(t=>t.id===el(axis).value);
 el(axis+'-name').textContent=t.name;
 el(axis+'-logo').src=t.logo;
 el(axis+'-logo').alt=t.name+' team logo'}
+function getGridDimensions(){
+    const value=el('grid-size').value;
+    if(value==='10x5')return {cols:10,rows:5};
+    const size=Number(value);
+    return {cols:size,rows:size};
+}
+
 function buildGrid(){
-    const size=Number(el('grid-size').value),squareCount=size*size;
+    const {cols,rows}=getGridDimensions(),squareCount=cols*rows;
     el('grid').replaceChildren();
-    el('grid').style.setProperty('--grid-size',size);
-    el('grid').setAttribute('aria-label',`Blank ${size} by ${size} squares board, with empty row and column number spaces`);
-    for(let r=0;r<=size;r++){
-      for(let c=0;c<=size;c++){
+    el('grid').style.setProperty('--grid-cols',cols);
+    el('grid').style.setProperty('--grid-rows',rows);
+    el('grid').style.setProperty('--grid-aspect-desktop',1.55*(cols/rows));
+    el('grid').style.setProperty('--grid-aspect-mobile',cols/rows);
+    el('grid').setAttribute('aria-label',`Blank ${cols} by ${rows} squares board, with empty row and column number spaces`);
+    for(let r=0;r<=rows;r++){
+      for(let c=0;c<=cols;c++){
         const cell=document.createElement('div');
         cell.className='cell'+(r===0||c===0?' number':'')+(r===0&&c===0?' corner':'');
 
@@ -264,7 +275,7 @@ function buildGrid(){
 const money=cents=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',minimumFractionDigits:cents%100?2:0,maximumFractionDigits:2}).format(cents/100);
 
 function calculate(cents){
-    const size=Number(el('grid-size').value),total=cents*size*size,q1=Math.round(total/8),half=Math.round(total/4);
+    const {cols,rows}=getGridDimensions(),total=cents*cols*rows,q1=Math.round(total/8),half=Math.round(total/4);
     return {total,values:[q1,half,q1,total-q1*2-half]}
     }
 
@@ -286,22 +297,3 @@ el('print').addEventListener('click',()=>window.print());changeLeague();buildGri
 </body>
 
 </html>
-
-
-<!--
-NOTE:  got rid of stuff like this:  can be added again if need be
-
-changed .value font weight from 800 to 100  font size to 10px
-
-got rid of this:
-<div class="prize-heading"><h2>Quarter payouts</h2><div class="total">Total pot <strong id="total"></strong></div></div>
-
-got rid of footnote:
-<p class="footnote" id="rounding">Payouts assume all 100 squares are filled.</p></section><p class="hint">Choose your teams and square price, then print. Squares and number spaces stay blank for you to fill in.</p>
-
-got rid of the title
-<div class="sheet-top"><span class="sheet-title">FOOTBALL SQUARES</span><span class="sheet-meta" id="meta"></span></div>
-
-prints the percent of the pot but i needed space on the sheet
-<div class="share">½ of total · 50%</div>
--->
