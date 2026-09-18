@@ -28,6 +28,7 @@
                 .board{display:grid;grid-template-columns:64px minmax(0,1fr);grid-template-rows:70px auto}
                 .top-team{grid-column:2;display:flex;align-items:center;justify-content:center;gap:14px}
                 .team-name{font-size:23px;font-weight:800;letter-spacing:-.5px}
+                .top-team-price{margin-left:12px;padding-left:18px;border-left:1px solid #b9c3c9;font-size:18px;font-weight:800;white-space:nowrap}
                 .logo{width:58px;height:58px;object-fit:contain}
                 .side-team{grid-column:1;grid-row:2;position:relative;display:flex;align-items:center;justify-content:center}
                 .side-inner{transform:rotate(-90deg);display:flex;align-items:center;justify-content:center;gap:14px;white-space:nowrap}
@@ -36,6 +37,14 @@
                 .cell{border-right:1px solid #75828b;border-bottom:1px solid #75828b;background:white}
                 .number{background:#edf1f3;border-color:#75828b}
                 .corner{background:#dce4e8}
+                .grid.split-number-boxes .row-number,
+                .grid.split-number-boxes .column-number{position:relative}
+                .grid.split-number-boxes .row-number::before,
+                .grid.split-number-boxes .column-number::before{content:"";position:absolute;background:#75828b;pointer-events:none}
+                .grid.split-number-boxes .row-number::before{left:0;right:0;top:50%;height:1px}
+                .grid.split-number-boxes .column-number::before{top:0;bottom:0;left:50%;width:1px}
+                .grid.split-left-number-boxes .row-number{position:relative}
+                .grid.split-left-number-boxes .row-number::before{content:"";position:absolute;left:0;right:0;top:50%;height:1px;background:#75828b;pointer-events:none}
                 .prize-heading{display:flex;align-items:center;justify-content:space-between;margin:22px 0 12px;gap:10px}
                 .prize-heading h2{margin:0;font-size:16px}
                 .total{font-size:14px;color:#52616a}
@@ -60,6 +69,7 @@
         .sheet{padding:12px 10px}
         .board{grid-template-columns:42px minmax(0,1fr);grid-template-rows:62px auto}
         .team-name{font-size:16px}
+        .top-team-price{margin-right:2px;padding-right:9px;font-size:2em !important;}
         .logo{width:36px;height:36px}
         .grid{grid-template-columns:23px repeat(var(--grid-cols,10),minmax(0,1fr));grid-template-rows:24px repeat(var(--grid-rows,10),1fr);aspect-ratio:var(--grid-aspect-mobile,1)}
 
@@ -89,6 +99,7 @@
             .grid{height:auto;min-height:0;aspect-ratio:auto}
             .logo{height:44px;width:44px}
             .team-name{font-size:22px}
+            .top-team-price{font-size:38px}
             .prize-heading{margin:12px 0 8px}
             .prize{padding:8px 14px}
             .value{
@@ -173,6 +184,7 @@
         <div class="board">
             <div class="top-team"><img class="logo" id="top-logo" alt="">
                 <span class="team-name" id="top-name"></span>
+                <span class="top-team-price" id="top-team-price"></span>
             </div>
 
             <div class="side-team">
@@ -255,6 +267,8 @@ function getGridDimensions(){
 function buildGrid(){
     const {cols,rows}=getGridDimensions(),squareCount=cols*rows;
     el('grid').replaceChildren();
+    el('grid').classList.toggle('split-number-boxes',cols===5&&rows===5);
+    el('grid').classList.toggle('split-left-number-boxes',cols===10&&rows===5);
     el('grid').style.setProperty('--grid-cols',cols);
     el('grid').style.setProperty('--grid-rows',rows);
     el('grid').style.setProperty('--grid-aspect-desktop',1.55*(cols/rows));
@@ -263,7 +277,7 @@ function buildGrid(){
     for(let r=0;r<=rows;r++){
       for(let c=0;c<=cols;c++){
         const cell=document.createElement('div');
-        cell.className='cell'+(r===0||c===0?' number':'')+(r===0&&c===0?' corner':'');
+        cell.className='cell'+(r===0||c===0?' number':'')+(r===0&&c===0?' corner':'')+(c===0&&r>0?' row-number':'')+(r===0&&c>0?' column-number':'');
 
         el('grid').append(cell)
       }
@@ -284,7 +298,9 @@ function updatePrice(){
     const valid=raw!==''&&Number.isFinite(n)&&n>=0&&n<=1000000&&Math.abs(n*100-Math.round(n*100))<.00001;el('error').textContent=valid?'':'Enter an amount from $0 to $1,000,000, with no more than two decimal places.';
     el('amount').setAttribute('aria-invalid',String(!valid));
     el('print').disabled=!valid;if(!valid){['q1','q2','q3','q4'].forEach(id=>el(id).textContent='—');
-    return}const cents=Math.round(n*100),p=calculate(cents);p.values.forEach((v,i)=>el('q'+(i+1)).textContent=money(v))
+    el('top-team-price').textContent='— / square';
+    return}const cents=Math.round(n*100),p=calculate(cents);p.values.forEach((v,i)=>el('q'+(i+1)).textContent=money(v));
+    el('top-team-price').textContent=money(cents)
     }
 
 el('amount').addEventListener('input',updatePrice);
