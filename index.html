@@ -10,6 +10,8 @@
             h1{font-size:32px;letter-spacing:-1px;margin:0}
             button{font:700 15px Arial;border:1px solid #8de3b9;background:#8de3b9;color:#10291e;border-radius:6px;padding:13px 20px;cursor:pointer}
             button:hover{background:#b4f3d2}
+            .header-actions{display:flex;align-items:center;gap:10px}
+            .share-status{font-size:13px;color:#7edbb3}
 
             button:focus-visible,
             select:focus-visible,
@@ -26,9 +28,10 @@
                 .sheet-title{font-size:13px;font-weight:bold;letter-spacing:1.8px}
                 .sheet-meta{font-size:14px;color:#52616a}
                 .board{display:grid;grid-template-columns:64px minmax(0,1fr);grid-template-rows:70px auto}
-                .top-team{grid-column:2;display:flex;align-items:center;justify-content:center;gap:14px}
+                .top-team{grid-column:2;position:relative;display:flex;align-items:center;justify-content:center;gap:14px}
                 .team-name{font-size:23px;font-weight:800;letter-spacing:-.5px}
-                .top-team-price{margin-left:12px;padding-left:18px;border-left:1px solid #b9c3c9;font-size:18px;font-weight:800;white-space:nowrap}
+                .top-team .team-name{position:absolute;left:50%;transform:translateX(-50%)}
+                .top-team-price{margin-left:auto;margin-right:0;padding-left:18px;border-left:1px solid #b9c3c9;font-size:18px;font-weight:800;white-space:nowrap}
                 .logo{width:58px;height:58px;object-fit:contain}
                 .side-team{grid-column:1;grid-row:2;position:relative;display:flex;align-items:center;justify-content:center}
                 .side-inner{transform:rotate(-90deg);display:flex;align-items:center;justify-content:center;gap:14px;white-space:nowrap}
@@ -69,7 +72,7 @@
         .sheet{padding:12px 10px}
         .board{grid-template-columns:42px minmax(0,1fr);grid-template-rows:62px auto}
         .team-name{font-size:16px}
-        .top-team-price{margin-right:2px;padding-right:9px;font-size:2em !important;}
+        .top-team-price{padding-left:9px;font-size:13px}
         .logo{width:36px;height:36px}
         .grid{grid-template-columns:23px repeat(var(--grid-cols,10),minmax(0,1fr));grid-template-rows:24px repeat(var(--grid-rows,10),1fr);aspect-ratio:var(--grid-aspect-mobile,1)}
 
@@ -93,13 +96,14 @@
             body{background:white}main{max-width:none;padding:0}header,
             .controls,
             .hint,
+            .header-actions,
             .error{display:none}
             .sheet{height:7.8in;padding:0;border-radius:0;box-shadow:none;break-inside:avoid;display:flex;flex-direction:column}
             .board{flex:1;min-height:0;grid-template-columns:55px minmax(0,1fr);grid-template-rows:55px minmax(0,1fr)}
             .grid{height:auto;min-height:0;aspect-ratio:auto}
             .logo{height:44px;width:44px}
-            .team-name{font-size:22px}
-            .top-team-price{font-size:38px}
+            .team-name{font-size:44px}
+            .top-team-price{font-size:44px}
             .prize-heading{margin:12px 0 8px}
             .prize{padding:8px 14px}
             .value{
@@ -114,7 +118,7 @@
 <body>
 
     <main>
-        <header><div><div class="eyebrow" id="eyebrow">GAME DAY / 100 SQUARES</div><h1>Football Squares</h1></div><button id="print" type="button">Print board</button></header>
+        <header><div><div class="eyebrow" id="eyebrow">GAME DAY / 100 SQUARES</div><h1>Football Squares</h1></div><div class="header-actions"><span class="share-status" id="share-status" role="status"></span><button id="share" type="button">Copy board link</button><button id="print" type="button">Print board</button></div></header>
 
             <section class="controls" aria-label="Board settings">
 
@@ -300,13 +304,44 @@ function updatePrice(){
     el('print').disabled=!valid;if(!valid){['q1','q2','q3','q4'].forEach(id=>el(id).textContent='—');
     el('top-team-price').textContent='— / square';
     return}const cents=Math.round(n*100),p=calculate(cents);p.values.forEach((v,i)=>el('q'+(i+1)).textContent=money(v));
-    el('top-team-price').textContent=money(cents)
+    el('top-team-price').textContent=(cents/100).toLocaleString('en-US',{style:'currency',currency:'USD',minimumFractionDigits:2,maximumFractionDigits:2})
     }
+
+function restoreBoardFromLink(){
+    const params=new URLSearchParams(location.search);
+    const league=params.get('league');
+    if(league==='NFL'||league==='College')el('league').value=league;
+    changeLeague();
+    for(const axis of ['top','side']){
+        const id=params.get(axis);
+        if(id&&activeTeams.some(team=>team.id===id)){
+            el(axis).value=id;
+            selections[el('league').value][axis]=id;
+            updateTeam(axis);
+        }
+    }
+    const grid=params.get('grid');
+    if(grid&&Array.from(el('grid-size').options).some(option=>option.value===grid))el('grid-size').value=grid;
+    const amount=params.get('amount');
+    if(amount!==null&&/^\d+(?:\.\d{1,2})?$/.test(amount)&&Number(amount)<=1000000)el('amount').value=amount;
+    buildGrid();
+}
+
+el('share').addEventListener('click',async()=>{
+    const url=new URL(location.href);
+    for(const [key,value] of Object.entries({league:el('league').value,top:el('top').value,side:el('side').value,grid:el('grid-size').value,amount:el('amount').value}))url.searchParams.set(key,value);
+    try{
+        await navigator.clipboard.writeText(url.href);
+        el('share-status').textContent='Link copied!';
+    }catch{
+        window.prompt('Copy this board link:',url.href);
+    }
+});
 
 el('amount').addEventListener('input',updatePrice);
 el('grid-size').addEventListener('change',buildGrid);
 
-el('print').addEventListener('click',()=>window.print());changeLeague();buildGrid();
+el('print').addEventListener('click',()=>window.print());restoreBoardFromLink();
 
 </script>
 
